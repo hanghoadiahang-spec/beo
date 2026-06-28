@@ -1,0 +1,185 @@
+
+-- ========================================
+-- CÀI ĐẶT AN TOÀN (TÙY CHỈNH)
+-- ========================================
+local Config = {
+    FlySpeed = 18,
+    FlyHeight = 20,
+    AttackRange = 25,
+    AttackMinDelay = 0.4,
+    AttackMaxDelay = 0.8,
+    PauseAfterHits = 12,
+    PauseDuration = 1.5,
+    MoveRandom = true,
+}
+
+-- ========================================
+-- TẠO GUI
+-- ========================================
+local gui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local title = Instance.new("TextLabel")
+local btnFarm = Instance.new("TextButton")
+local btnFly = Instance.new("TextButton")
+local btnHop = Instance.new("TextButton")
+local btnClose = Instance.new("TextButton")
+
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+frame.Parent = gui
+frame.Size = UDim2.new(0, 220, 0, 200)
+frame.Position = UDim2.new(0.5, -110, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
+frame.BackgroundTransparency = 0.9
+frame.Active = true
+frame.Draggable = true
+
+title.Parent = frame
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Text = "🛡️ KAITUN SAFE"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundColor3 = Color3.fromRGB(140, 60, 200)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+
+btnFarm.Parent = frame
+btnFarm.Size = UDim2.new(0.8, 0, 0, 30)
+btnFarm.Position = UDim2.new(0.1, 0, 0.25, 0)
+btnFarm.Text = "▶️ BẬT FARM"
+btnFarm.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+btnFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnFarm.Font = Enum.Font.GothamBold
+btnFarm.TextSize = 14
+
+btnFly.Parent = frame
+btnFly.Size = UDim2.new(0.8, 0, 0, 30)
+btnFly.Position = UDim2.new(0.1, 0, 0.45, 0)
+btnFly.Text = "🛫 BAY TÌM QUÁI"
+btnFly.BackgroundColor3 = Color3.fromRGB(200, 180, 60)
+btnFly.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnFly.Font = Enum.Font.GothamBold
+btnFly.TextSize = 14
+
+btnHop.Parent = frame
+btnHop.Size = UDim2.new(0.8, 0, 0, 30)
+btnHop.Position = UDim2.new(0.1, 0, 0.65, 0)
+btnHop.Text = "🔄 HOP SERVER"
+btnHop.BackgroundColor3 = Color3.fromRGB(60, 80, 200)
+btnHop.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnHop.Font = Enum.Font.GothamBold
+btnHop.TextSize = 14
+
+btnClose.Parent = frame
+btnClose.Size = UDim2.new(0.15, 0, 0.2, 0)
+btnClose.Position = UDim2.new(0.82, 0, -0.02, 0)
+btnClose.Text = "✕"
+btnClose.BackgroundColor3 = Color3.fromRGB(200, 50, 80)
+btnClose.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnClose.Font = Enum.Font.GothamBold
+btnClose.TextSize = 14
+
+-- BIẾN ĐIỀU KHIỂN
+_G.AutoFarm = false
+_G.FlyMode = false
+_G.HitCount = 0
+
+-- XỬ LÝ CLICK
+btnFarm.MouseButton1Click:Connect(function()
+    _G.AutoFarm = not _G.AutoFarm
+    btnFarm.Text = _G.AutoFarm and "⏹️ TẮT FARM" or "▶️ BẬT FARM"
+    print("Farm:", _G.AutoFarm)
+end)
+
+btnFly.MouseButton1Click:Connect(function()
+    _G.FlyMode = not _G.FlyMode
+    btnFly.Text = _G.FlyMode and "🛬 HẠ CÁNH" or "🛫 BAY TÌM QUÁI"
+    print("Fly mode:", _G.FlyMode)
+end)
+
+btnHop.MouseButton1Click:Connect(function()
+    print("Đang đổi server...")
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
+end)
+
+btnClose.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- ========================================
+-- HÀM ĐÁNH (AN TOÀN, CÓ RANDOM)
+-- ========================================
+function Attack()
+    pcall(function()
+        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, 0)
+        wait(0.05)
+        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, false, game, 0)
+    end)
+end
+
+-- ========================================
+-- VÒNG LẶP FARM + BAY AN TOÀN
+-- ========================================
+spawn(function()
+    local random = math.random
+    while wait(0.15) do
+        local player = game.Players.LocalPlayer
+        if not player or not player.Character then wait(1) continue end
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+
+        -- TÌM QUÁI GẦN NHẤT
+        local target = nil
+        local minDist = Config.AttackRange
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
+                if v.Humanoid.Health > 0 then
+                    local dist = (hrp.Position - v.HumanoidRootPart.Position).Magnitude
+                    if dist < minDist then
+                        minDist = dist
+                        target = v
+                    end
+                end
+            end
+        end
+
+        if _G.AutoFarm then
+            if target then
+                -- CÓ QUÁI → HẠ CÁNH + ĐÁNH
+                if hrp.Velocity.Y > 5 then
+                    hrp.Velocity = Vector3.new(0, -3, 0)
+                end
+                hrp.CFrame = CFrame.new(target.HumanoidRootPart.Position + Vector3.new(0, 2, 5))
+                Attack()
+                _G.HitCount = _G.HitCount + 1
+                local delay = random(Config.AttackMinDelay * 100, Config.AttackMaxDelay * 100) / 100
+                wait(delay)
+                if _G.HitCount >= Config.PauseAfterHits then
+                    wait(Config.PauseDuration + random() * 0.5)
+                    _G.HitCount = 0
+                end
+                if Config.MoveRandom and random() > 0.7 then
+                    hrp.CFrame = hrp.CFrame * CFrame.Angles(0, random(-0.5, 0.5), 0)
+                end
+            else
+                -- KHÔNG CÓ QUÁI → BAY TÌM
+                if _G.FlyMode then
+                    local currentY = hrp.Velocity.Y
+                    if currentY < Config.FlyHeight then
+                        hrp.Velocity = Vector3.new(0, currentY + 0.5, 0)
+                    else
+                        hrp.Velocity = Vector3.new(0, Config.FlyHeight, 0)
+                    end
+                    wait(0.3)
+                else
+                    hrp.Velocity = Vector3.new(0, 5, 0)
+                    wait(0.5)
+                end
+            end
+        else
+            hrp.Velocity = Vector3.new(0, 0, 0)
+        end
+    end
+end)
+
+print("🛡️ KAITUN SAFE MODE ĐÃ CHẠY!")
+print("✅ Đã áp dụng cài đặt chống ban.")
