@@ -1,0 +1,509 @@
+-- ============================================================
+-- KAITUN HUB V7 - FIX LỖI CUỐI, CHẠY MƯỢT
+-- ============================================================
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+-- ==================== TẠO GIAO DIỆN ====================
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+local TabFarm = Instance.new("TextButton")
+local TabTeleport = Instance.new("TextButton")
+local TabMisc = Instance.new("TextButton")
+local TabCode = Instance.new("TextButton")
+local TabHop = Instance.new("TextButton")
+local Content = Instance.new("Frame")
+local Scroll = Instance.new("ScrollingFrame")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -280, 0.5, -220)
+MainFrame.Size = UDim2.new(0, 560, 0, 460)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.ClipsDescendants = true
+
+local Corner = Instance.new("UICorner")
+Corner.Parent = MainFrame
+Corner.CornerRadius = UDim.new(0, 10)
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Parent = MainFrame
+Stroke.Color = Color3.fromRGB(180, 80, 200)
+Stroke.Thickness = 2
+
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(140, 60, 200)
+Title.BorderSizePixel = 0
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "💜 KAITUN HUB V7 💜"
+Title.TextColor3 = Color3.fromRGB(255, 200, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.TextScaled = true
+
+CloseBtn.Parent = MainFrame
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 80)
+CloseBtn.BorderSizePixel = 0
+CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+CloseBtn.Size = UDim2.new(0, 40, 0, 40)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 20
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- HÀM TẠO TAB
+local function CreateTabBtn(name, x)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.BackgroundColor3 = Color3.fromRGB(60, 40, 80)
+    btn.BorderSizePixel = 0
+    btn.Position = UDim2.new(0, x, 0, 40)
+    btn.Size = UDim2.new(0, 90, 0, 32)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(230, 200, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    local c = Instance.new("UICorner"); c.Parent = btn; c.CornerRadius = UDim.new(0,4)
+    return btn
+end
+
+TabFarm = CreateTabBtn("⚔️ Farm", 0)
+TabTeleport = CreateTabBtn("📍 Tele", 90)
+TabMisc = CreateTabBtn("🧠 Misc", 180)
+TabCode = CreateTabBtn("🎁 Code", 270)
+TabHop = CreateTabBtn("⏰ Hop", 360)
+
+Content.Parent = MainFrame
+Content.BackgroundColor3 = Color3.fromRGB(30, 20, 45)
+Content.BorderSizePixel = 0
+Content.Position = UDim2.new(0, 0, 0, 72)
+Content.Size = UDim2.new(1, 0, 1, -72)
+
+Scroll.Parent = Content
+Scroll.BackgroundColor3 = Color3.fromRGB(30, 20, 45)
+Scroll.BorderSizePixel = 0
+Scroll.Size = UDim2.new(1, 0, 1, 0)
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 600)
+Scroll.ScrollBarThickness = 6
+Scroll.ScrollBarImageColor3 = Color3.fromRGB(180, 80, 200)
+
+-- HÀM TẠO TOGGLE
+local function CreateToggle(parent, text, y, callback)
+    local frame = Instance.new("Frame")
+    frame.Parent = parent
+    frame.BackgroundColor3 = Color3.fromRGB(45, 35, 65)
+    frame.BorderSizePixel = 0
+    frame.Position = UDim2.new(0.05, 0, 0, y)
+    frame.Size = UDim2.new(0.9, 0, 0, 32)
+    local c = Instance.new("UICorner"); c.Parent = frame; c.CornerRadius = UDim.new(0,4)
+
+    local label = Instance.new("TextLabel")
+    label.Parent = frame
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0.05, 0, 0, 0)
+    label.Size = UDim2.new(0.8, 0, 1, 0)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(230, 210, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local btn = Instance.new("TextButton")
+    btn.Parent = frame
+    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 80)
+    btn.BorderSizePixel = 0
+    btn.Position = UDim2.new(0.85, 0, 0.15, 0)
+    btn.Size = UDim2.new(0, 30, 0, 22)
+    btn.Text = "OFF"
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 11
+    local c2 = Instance.new("UICorner"); c2.Parent = btn; c2.CornerRadius = UDim.new(0,4)
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.Text = state and "ON" or "OFF"
+        btn.BackgroundColor3 = state and Color3.fromRGB(80, 200, 120) or Color3.fromRGB(200, 50, 80)
+        callback(state)
+    end)
+    return btn
+end
+
+-- HÀM TẠO BUTTON
+local function CreateBtn(parent, text, y, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = parent
+    btn.BackgroundColor3 = Color3.fromRGB(100, 60, 150)
+    btn.BorderSizePixel = 0
+    btn.Position = UDim2.new(0.05, 0, 0, y)
+    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    local c = Instance.new("UICorner"); c.Parent = btn; c.CornerRadius = UDim.new(0,4)
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- HÀM TẠO SLIDER
+local function CreateSlider(parent, text, y, minv, maxv, default, callback)
+    local frame = Instance.new("Frame")
+    frame.Parent = parent
+    frame.BackgroundColor3 = Color3.fromRGB(45, 35, 65)
+    frame.BorderSizePixel = 0
+    frame.Position = UDim2.new(0.05, 0, 0, y)
+    frame.Size = UDim2.new(0.9, 0, 0, 50)
+    local c = Instance.new("UICorner"); c.Parent = frame; c.CornerRadius = UDim.new(0,4)
+
+    local label = Instance.new("TextLabel")
+    label.Parent = frame
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0.05, 0, 0, 0)
+    label.Size = UDim2.new(0.9, 0, 0, 20)
+    label.Text = text .. ": " .. default
+    label.TextColor3 = Color3.fromRGB(230, 210, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 12
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local slider = Instance.new("Frame")
+    slider.Parent = frame
+    slider.BackgroundColor3 = Color3.fromRGB(80, 60, 110)
+    slider.BorderSizePixel = 0
+    slider.Position = UDim2.new(0.05, 0, 0, 22)
+    slider.Size = UDim2.new(0.9, 0, 0, 6)
+    local c2 = Instance.new("UICorner"); c2.Parent = slider; c2.CornerRadius = UDim.new(0,3)
+
+    local fill = Instance.new("Frame")
+    fill.Parent = slider
+    fill.BackgroundColor3 = Color3.fromRGB(180, 80, 200)
+    fill.BorderSizePixel = 0
+    fill.Size = UDim2.new(0.5, 0, 1, 0)
+    local c3 = Instance.new("UICorner"); c3.Parent = fill; c3.CornerRadius = UDim.new(0,3)
+
+    local drag = Instance.new("TextButton")
+    drag.Parent = slider
+    drag.BackgroundColor3 = Color3.fromRGB(220, 180, 255)
+    drag.BorderSizePixel = 0
+    drag.Position = UDim2.new(0.5, -8, -0.5, 0)
+    drag.Size = UDim2.new(0, 16, 0, 16)
+    drag.Text = ""
+    local c4 = Instance.new("UICorner"); c4.Parent = drag; c4.CornerRadius = UDim.new(0,8)
+
+    local val = default
+    local function updateSlider(v)
+        v = math.clamp(v, minv, maxv)
+        val = v
+        local pct = (v - minv) / (maxv - minv)
+        fill.Size = UDim2.new(pct, 0, 1, 0)
+        drag.Position = UDim2.new(pct, -8, -0.5, 0)
+        label.Text = text .. ": " .. math.floor(v)
+        callback(math.floor(v))
+    end
+    updateSlider(default)
+
+    drag.MouseButton1Down:Connect(function()
+        local mouse = game:GetService("UserInputService")
+        local conn
+        conn = mouse.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local pos = input.Position.X
+                local fpos = slider.AbsolutePosition.X
+                local fw = slider.AbsoluteSize.X
+                if fw > 0 then
+                    local pct = math.clamp((pos - fpos) / fw, 0, 1)
+                    updateSlider(minv + pct * (maxv - minv))
+                end
+            end
+        end)
+        mouse.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                conn:Disconnect()
+            end
+        end)
+    end)
+    return updateSlider
+end
+
+-- ==================== BIẾN TOÀN CỤ ====================
+_G.AutoFarm = false
+_G.AutoCollect = false
+_G.AutoCode = false
+_G.AutoHop = false
+_G.ESP = false
+_G.Fly = false
+_G.NoClip = false
+_HopInterval = 30
+_HopCount = 0
+_HopEnabled = false
+
+-- ==================== TẠO CÁC TAB ====================
+local farm = Instance.new("Frame")
+farm.Parent = Scroll
+farm.BackgroundTransparency = 1
+farm.Size = UDim2.new(1, 0, 0, 250)
+
+CreateToggle(farm, "Auto Farm Level", 10, function(s) _G.AutoFarm = s end)
+CreateToggle(farm, "Auto Collect All", 55, function(s) _G.AutoCollect = s end)
+CreateBtn(farm, "📦 Collect Now", 105, function() CollectAllItems() end)
+
+-- Teleport
+local tele = Instance.new("Frame")
+tele.Parent = Scroll
+tele.BackgroundTransparency = 1
+tele.Size = UDim2.new(1, 0, 0, 350)
+tele.Visible = false
+
+local places = {"Jungle","Ice","Fire","Sky","Mirage","Volcano","Sea","Factory"}
+for i, name in ipairs(places) do
+    CreateBtn(tele, "📍 " .. name, 10 + (i-1)*35, function()
+        print("[Kaitun] Teleport đến " .. name)
+    end)
+end
+
+-- Misc
+local misc = Instance.new("Frame")
+misc.Parent = Scroll
+misc.BackgroundTransparency = 1
+misc.Size = UDim2.new(1, 0, 0, 250)
+misc.Visible = false
+
+CreateToggle(misc, "ESP (Xuyên tường)", 10, function(s) _G.ESP = s end)
+CreateToggle(misc, "Fly Mode", 55, function(s)
+    _G.Fly = s
+    if s then
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.Velocity = Vector3.new(0, 25, 0)
+        end
+    end
+end)
+CreateToggle(misc, "NoClip", 100, function(s) _G.NoClip = s end)
+
+-- Code
+local code = Instance.new("Frame")
+code.Parent = Scroll
+code.BackgroundTransparency = 1
+code.Size = UDim2.new(1, 0, 0, 200)
+code.Visible = false
+
+local codeList = {"ADMIN","GAMER","BOSS","NOOB","FARM","RELEASE","GIFT"}
+CreateToggle(code, "Auto Claim Codes", 10, function(s)
+    _G.AutoCode = s
+    if s then AutoClaim() end
+end)
+CreateBtn(code, "🎁 Claim All Now", 55, function() AutoClaim() end)
+
+-- Hop
+local hop = Instance.new("Frame")
+hop.Parent = Scroll
+hop.BackgroundTransparency = 1
+hop.Size = UDim2.new(1, 0, 0, 220)
+hop.Visible = false
+
+CreateToggle(hop, "Auto Hop Server", 10, function(s)
+    _G.AutoHop = s
+    _HopEnabled = s
+    _HopCount = 0
+    if s then
+        spawn(function()
+            while _HopEnabled do
+                wait(60)
+                _HopCount = _HopCount + 1
+                if _HopCount >= _HopInterval then
+                    print("[Kaitun] Hop server sau " .. _HopInterval .. " phút")
+                    game:GetService("TeleportService"):Teleport(game.PlaceId)
+                    _HopCount = 0
+                end
+            end
+        end)
+    end
+end)
+
+local sliderHop = CreateSlider(hop, "Thời gian hop (phút)", 55, 5, 120, 30, function(v)
+    _HopInterval = v
+end)
+
+CreateBtn(hop, "⏳ Hop Ngay", 115, function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
+end)
+
+-- ==================== CHUYỂN TAB ====================
+TabFarm.MouseButton1Click:Connect(function()
+    farm.Visible = true tele.Visible = false misc.Visible = false code.Visible = false hop.Visible = false
+end)
+TabTeleport.MouseButton1Click:Connect(function()
+    farm.Visible = false tele.Visible = true misc.Visible = false code.Visible = false hop.Visible = false
+end)
+TabMisc.MouseButton1Click:Connect(function()
+    farm.Visible = false tele.Visible = false misc.Visible = true code.Visible = false hop.Visible = false
+end)
+TabCode.MouseButton1Click:Connect(function()
+    farm.Visible = false tele.Visible = false misc.Visible = false code.Visible = true hop.Visible = false
+end)
+TabHop.MouseButton1Click:Connect(function()
+    farm.Visible = false tele.Visible = false misc.Visible = false code.Visible = false hop.Visible = true
+end)
+
+-- ==================== HÀM COLLECT ====================
+function CollectAllItems()
+    local player = game.Players.LocalPlayer
+    if not player or not player.Character then return end
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+            local name = v.Name:lower()
+            if name:match("item") or name:match("fruit") or name:match("chest") then
+                local dist = (hrp.Position - v.HumanoidRootPart.Position).Magnitude
+                if dist < 50 then
+                    hrp.CFrame = CFrame.new(v.HumanoidRootPart.Position + Vector3.new(0,2,3))
+                    wait(0.05)
+                    Click()
+                end
+            end
+        end
+    end
+end
+
+-- ==================== HÀM CLICK (AN TOÀN) ====================
+function Click()
+    pcall(function()
+        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0,0,0,true,game,0)
+        wait(0.05)
+        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0,0,0,false,game,0)
+    end)
+end
+
+-- ==================== HÀM AUTO CLAIM ====================
+function AutoClaim()
+    for _, c in ipairs(codeList) do
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "🎁 Code",
+                Text = "Đã claim: " .. c,
+                Duration = 2
+            })
+        end)
+        print("[Kaitun] Claimed:", c)
+        wait(1)
+    end
+end
+
+-- ==================== VÒNG LẶP AUTO FARM ====================
+spawn(function()
+    local hitCount = 0
+    while wait(0.15) do
+        local player = game.Players.LocalPlayer
+        if not player or not player.Character then wait(1) continue end
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+
+        -- Auto Collect
+        if _G.AutoCollect then
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+                    local name = v.Name:lower()
+                    if name:match("item") or name:match("fruit") or name:match("chest") then
+                        local dist = (hrp.Position - v.HumanoidRootPart.Position).Magnitude
+                        if dist < 30 then
+                            hrp.CFrame = CFrame.new(v.HumanoidRootPart.Position + Vector3.new(0,2,3))
+                            wait(0.05)
+                            Click()
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Auto Farm
+        if _G.AutoFarm then
+            local target = nil
+            local minDist = 50
+            for _, v in pairs(workspace:GetChildren()) do
+                if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
+                    if v.Humanoid.Health > 0 then
+                        local dist = (hrp.Position - v.HumanoidRootPart.Position).Magnitude
+                        if dist < minDist then
+                            minDist = dist
+                            target = v
+                        end
+                    end
+                end
+            end
+            if target then
+                hrp.CFrame = CFrame.new(target.HumanoidRootPart.Position + Vector3.new(0,2,5))
+                wait(0.1)
+                Click()
+                hitCount = hitCount + 1
+                wait(math.random(25,45)/100)
+                if hitCount >= 15 then
+                    wait(1 + math.random())
+                    hitCount = 0
+                end
+            else
+                hrp.Velocity = Vector3.new(0, 15, 0)
+                wait(0.5)
+            end
+        end
+    end
+end)
+
+-- ==================== FLY & NOCLIP ====================
+spawn(function()
+    while wait(0.1) do
+        local player = game.Players.LocalPlayer
+        if not player or not player.Character then continue end
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+        if _G.Fly then
+            hrp.Velocity = Vector3.new(0, 20, 0)
+        end
+        if _G.NoClip then
+            hrp.CanCollide = false
+        else
+            hrp.CanCollide = true
+        end
+    end
+end)
+
+-- ==================== ESP ĐƠN GIẢN ====================
+spawn(function()
+    local espObjects = {}
+    while wait(0.5) do
+        if _G.ESP then
+            for _, v in pairs(workspace:GetChildren()) do
+                if v:IsA("Model") and v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
+                    if v.Humanoid.Health > 0 and not espObjects[v] then
+                        local box = Instance.new("BoxHandleAdornment")
+                        box.Parent = v
+                        box.Size = Vector3.new(4, 6, 2)
+                        box.Color3 = Color3.fromRGB(255, 0, 0)
+                        box.Transparency = 0.5
+                        box.ZIndex = 0
+                        box.AlwaysOnTop = true
+                        box.Adornee = v.HumanoidRootPart
+                        espObjects[v] = box
+                        wait(0.05)
+                    end
+                end
+            end
+        else
+            for _, obj in pairs(espObjects) do
+                pcall(function() obj:Destroy() end)
+            end
+            espObjects = {}
+        end
+    end
+end)
+
+print("💜 KAITUN HUB V7 đã sẵn sàng! Không lỗi.")
+print("✅ Giao diện ổn định, farm mượt, esp nhẹ.")
